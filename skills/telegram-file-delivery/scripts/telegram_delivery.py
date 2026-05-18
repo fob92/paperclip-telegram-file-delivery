@@ -6,13 +6,16 @@ import json
 import mimetypes
 import os
 import re
-import sys
 from pathlib import Path
 from urllib import error, parse, request
 
 DEFAULT_ALLOWED_EXTENSIONS = ".md,.txt,.pdf,.docx,.pptx,.xlsx,.png,.jpg,.jpeg"
 TRIGGER_RE = re.compile(
-    r"(?:^|\n)\s*/telegram-send\s+attachments(?:\s+to\s+(?P<chat>-?\d+))?\s*$",
+    r"(?:^|\n)\s*/telegram-send\s+(?P<mode>attachments|latest-package|final-package)(?:\s+to\s+(?P<chat>-?\d+))?\s*$",
+    re.IGNORECASE | re.MULTILINE,
+)
+DELIVERED_PACKAGE_RE = re.compile(
+    r"Delivered\s+package\s*(?P<body>(?:\n-\s+[^\n]+)+)",
     re.IGNORECASE | re.MULTILINE,
 )
 DOTENV_FILES = (".env", ".env.telegram", ".env.paperclip")
@@ -80,11 +83,27 @@ def validate_file_path(path: str | Path, cfg: dict) -> Path:
     return file_path
 
 
-def parse_trigger(comment_text: str) -> tuple[bool, str | None]:
+def parse_trigger(comment_text: str) -> tuple[bool, str | None, str | None]:
     match = TRIGGER_RE.search(comment_text or "")
     if not match:
-        return False, None
-    return True, match.group("chat")
+        return False, None, None
+    return True, match.group("chat"), match.group("mode").lower()
+
+
+def extract_delivered_package_paths(comment_text: str) -> list[str]:
+    match = DELIVERED_PACKAGE_RE.search(comment_text or "")
+    if not match:
+        return []
+    body = match.group("body")
+    paths = []
+    for line in body.splitlines():
+        line = line.strip()
+        if not line.startswith("-"):
+            continue
+        candidate = line[1:].strip()
+        if candidate:
+            paths.append(candidate)
+    return paths
 
 
 def post_form(base_url: str, endpoint: str, fields: dict[str, str], timeout: int) -> dict:
@@ -129,21 +148,28 @@ def execute(req: request.Request, timeout: int) -> dict:
 def attachments_from_args(args) -> list[dict]:
     items = []
     for p in args.attachment or []:
-        items.append({"path": str(Path(p).expanduser().resolve()), "name": None})
+        items.append({"path": str(Path(p).expanduser().resolve()), "name": None, "source": "attachment-arg"})
     if args.attachments_dir:
         root = Path(args.attachments_dir).expanduser().resolve()
         for p in sorted(root.iterdir()):
             if p.is_file():
-                items.append({"path": str(p.resolve()), "name": None})
+                items.append({"path": str(p.resolve()), "name": None, "source": "attachments-dir"})
     if args.attachments_manifest:
         payload = json.loads(Path(args.attachments_manifest).expanduser().resolve().read_text())
         rows = payload.get("attachments", payload)
         for row in rows:
             if isinstance(row, str):
-                items.append({"path": str(Path(row).expanduser().resolve()), "name": None})
+                items.append({"path": str(Path(row).expanduser().resolve()), "name": None, "source": "attachments-manifest"})
             else:
-                items.append({"path": str(Path(row["path"]).expanduser().resolve()), "name": row.get("name")})
+                items.append({"path": str(Path(row["path"]).expanduser().resolve()), "name": row.get("name"), "source": row.get("source", "attachments-manifest")})
     return items
+
+
+def package_attachments_from_comment_text(package_comment_text: str) -> list[dict]:
+    return [
+        {"path": str(Path(path).expanduser().resolve()), "name": None, "source": "package-comment"}
+        for path in extract_delivered_package_paths(package_comment_text)
+    ]
 
 
 def render_comment(result: dict) -> str:
@@ -155,7 +181,12 @@ def render_comment(result: dict) -> str:
             suffix = f" ({item['reason']})" if item.get("reason") else ""
             out.append(f"- {item['name']}{suffix}")
         return out
-    lines = ["Telegram delivery completed." if result["ok"] else ("Telegram delivery not triggered." if not result["trigger_matched"] else "Telegram delivery could not complete cleanly.")]
+
+    lines = [
+        "Telegram delivery completed."
+        if result["ok"]
+        else ("Telegram delivery not triggered." if not result["trigger_matched"] else "Telegram delivery could not complete cleanly.")
+    ]
     if result.get("target_chat_id"):
         lines += ["", f"Destination: {result['target_chat_id']}"]
     lines += ["", "Sent files:", *bullets(result["sent"]), "", "Skipped files:", *bullets(result["skipped"]), "", "Failed files:", *bullets(result["failed"])]
@@ -169,22 +200,35 @@ def run_workflow(args) -> tuple[int, dict]:
     comment_text = args.comment_text or ""
     if args.comment_file:
         comment_text = Path(args.comment_file).read_text(encoding="utf-8")
-    matched, trigger_chat_id = parse_trigger(comment_text)
+    package_comment_text = args.package_comment_text or ""
+    if args.package_comment_file:
+        package_comment_text = Path(args.package_comment_file).read_text(encoding="utf-8")
+
+    matched, trigger_chat_id, mode = parse_trigger(comment_text)
     target_chat_id = args.chat_id or trigger_chat_id or cfg["default_chat_id"]
-    result = {"ok": True, "trigger_matched": matched, "target_chat_id": target_chat_id, "sent": [], "skipped": [], "failed": [], "notes": []}
+    result = {"ok": True, "trigger_matched": matched, "target_chat_id": target_chat_id, "mode": mode, "sent": [], "skipped": [], "failed": [], "notes": []}
     if not matched:
         result["ok"] = False
-        result["notes"].append("No explicit /telegram-send attachments trigger found.")
+        result["notes"].append("No explicit /telegram-send command found.")
         return 1, result
+
     attachments = attachments_from_args(args)
+    if mode in {"latest-package", "final-package"} and not attachments:
+        attachments = package_attachments_from_comment_text(package_comment_text)
+        if attachments:
+            result["notes"].append("Resolved files from the latest delivered package comment.")
+        else:
+            result["notes"].append("No delivered package file list could be resolved from package comment text.")
+
     if not attachments:
         result["ok"] = False
         result["notes"].append("No attachments or deliverable files were provided to the workflow.")
         return 1, result
+
     base_url = f"https://api.telegram.org/bot{cfg['bot_token']}"
+    validate_chat_id(target_chat_id, cfg)
     for item in attachments:
         try:
-            validate_chat_id(target_chat_id, cfg)
             file_path = validate_file_path(item["path"], cfg)
             post_multipart(base_url, "sendDocument", {"chat_id": target_chat_id, "caption": ""}, file_path, cfg["timeout_seconds"])
         except ValueError as exc:
@@ -211,6 +255,8 @@ def build_parser() -> argparse.ArgumentParser:
     p3 = sub.add_parser("workflow")
     p3.add_argument("--comment-text")
     p3.add_argument("--comment-file")
+    p3.add_argument("--package-comment-text", help="Comment text containing the latest delivered package file list")
+    p3.add_argument("--package-comment-file", help="File containing the latest delivered package file list comment")
     p3.add_argument("--attachment", action="append", default=[])
     p3.add_argument("--attachments-dir")
     p3.add_argument("--attachments-manifest")

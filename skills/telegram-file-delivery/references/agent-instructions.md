@@ -9,6 +9,8 @@ Act only on commands like:
 ```text
 /telegram-send attachments
 /telegram-send attachments to -1001234567890
+/telegram-send latest-package
+/telegram-send final-package
 ```
 
 ## Required behavior
@@ -17,17 +19,23 @@ Act only on commands like:
 2. Prefer wake delta/new comments over replaying the full thread.
 3. Confirm the request explicitly asks for Telegram delivery.
 4. Retrieve issue attachments or explicit current-issue deliverables.
-5. Filter files using the local safety policy.
-6. Prefer the end-to-end workflow command:
+5. For `latest-package` / `final-package`, first inspect the latest prior comment that contains a `Delivered package` section and resolve the bullet-listed files from there.
+6. Filter files using the local safety policy.
+7. Prefer the end-to-end workflow command:
 
 ```bash
-python skills/telegram-file-delivery/bin/paperclip_telegram_send.py workflow \
+python scripts/telegram_delivery.py workflow \
   --comment-text '/telegram-send attachments' \
   --attachments-manifest /absolute/path/to/attachments.json \
   --emit-comment
+
+python scripts/telegram_delivery.py workflow \
+  --comment-text '/telegram-send latest-package' \
+  --package-comment-file /absolute/path/to/latest-delivered-package-comment.txt \
+  --emit-comment
 ```
 
-7. Post a single summary comment containing:
+8. Post a single summary comment containing:
    - destination used
    - files sent
    - files skipped

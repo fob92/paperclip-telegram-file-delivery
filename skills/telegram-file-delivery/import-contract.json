@@ -28,6 +28,7 @@
       "references/templates/agents/REVIEWER.md",
       "references/examples/comment.txt",
       "references/examples/attachments.json",
+      "references/examples/package-comment.txt",
       "assets/TELEGRAM-DELIVERY-OPERATING-MODEL.md"
     ],
     "developmentOnlyPaths": [
