@@ -7,13 +7,10 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: skills/telegram-file-delivery
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - name: Validate skill
-        run: bash scripts/validate.sh
+        run: bash skills/telegram-file-delivery/scripts/validate.sh

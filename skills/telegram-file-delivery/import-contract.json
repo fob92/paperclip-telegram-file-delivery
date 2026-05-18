@@ -1,0 +1,42 @@
+{
+  "name": "telegram-file-delivery",
+  "version": "1.0.1",
+  "uiInstallRequirements": {
+    "expectedSkillRoot": "skills/telegram-file-delivery",
+    "preferredSiblingDirectories": [
+      "scripts",
+      "references",
+      "assets"
+    ],
+    "requiredPaths": [
+      "SKILL.md",
+      "scripts/telegram_delivery.py",
+      "references/paperclip-integration.md",
+      "references/operations.md",
+      "references/implementation-plan.md",
+      "references/agent-instructions.md",
+      "references/docs/install-checklist.md",
+      "references/docs/paperclip-ui-install.md",
+      "references/docs/guardrails.md",
+      "references/docs/rollout.md",
+      "references/docs/env-setup.md",
+      "references/docs/company-agent-pack.md",
+      "references/docs/production-pack.md",
+      "references/templates/company/AGENTS.md",
+      "references/templates/company/HEARTBEAT.md",
+      "references/templates/agents/DELIVERY-AGENT.md",
+      "references/templates/agents/REVIEWER.md",
+      "references/examples/comment.txt",
+      "references/examples/attachments.json",
+      "assets/TELEGRAM-DELIVERY-OPERATING-MODEL.md"
+    ],
+    "developmentOnlyPaths": [
+      "bin/",
+      "src/",
+      "docs/",
+      "templates/",
+      "examples/"
+    ],
+    "envOnlyOperatorSetup": true
+  }
+}

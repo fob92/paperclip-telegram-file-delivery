@@ -1,6 +1,6 @@
 ---
 name: telegram-file-delivery
-version: "1.0.0"
+version: "1.0.1"
 description: >
   Deliver explicitly requested issue files or generated deliverables to Telegram
   from Paperclip/OpenClaw using a safe env-configured helper. Optimized for
@@ -51,8 +51,9 @@ This package is designed to be **UI-importable** and **productive by default**:
 - no pip install required
 - no repo patching after import
 - only `.env` configuration should be needed
-- direct Python stdlib Telegram Bot API client included in this repo
+- direct Python stdlib Telegram Bot API client included in `scripts/telegram_delivery.py`
 - end-to-end workflow runner included for trigger parsing, attachment intake, delivery, and summary generation
+- layout aligned to the working Paperclip pattern: `skills/<skill>/SKILL.md` plus sibling `scripts/`, `references/`, and `assets/`
 
 ## Production-safe trigger
 
@@ -95,22 +96,18 @@ For the first production rollout, keep behavior constrained:
 
 ## Included local helper
 
-Run directly with Python, no installation step required:
+For Paperclip-installed use, prefer the self-contained helper in `scripts/`:
 
 ```bash
-python skills/telegram-file-delivery/bin/paperclip_telegram_send.py message --text "Telegram delivery is configured."
-python skills/telegram-file-delivery/bin/paperclip_telegram_send.py document --path /absolute/path/to/file
-python skills/telegram-file-delivery/bin/paperclip_telegram_send.py workflow \
+python scripts/telegram_delivery.py message --text "Telegram delivery is configured."
+python scripts/telegram_delivery.py document --path /absolute/path/to/file
+python scripts/telegram_delivery.py workflow \
   --comment-text '/telegram-send attachments' \
-  --attachments-dir /absolute/path/to/files \
+  --attachments-manifest references/examples/attachments.json \
   --emit-comment
 ```
 
-If you prefer module execution:
-
-```bash
-python -m paperclip_telegram_delivery.cli message --text "hello"
-```
+For repo-local development, the richer library-backed helper also exists, but installed Paperclip workflows should rely on the self-contained `scripts/telegram_delivery.py` path.
 
 ## Supported file types by default
 
@@ -153,7 +150,7 @@ The helper auto-loads `.env`, `.env.telegram`, or `.env.paperclip` if present, s
 ### 2. Smoke test
 
 ```bash
-python skills/telegram-file-delivery/bin/paperclip_telegram_send.py message --text "Telegram delivery is configured."
+python scripts/telegram_delivery.py message --text "Telegram delivery is configured."
 ```
 
 ## Delivery summary contract
@@ -172,26 +169,25 @@ After execution, comment back with:
 
 This skill is production-ready only when the full `skills/telegram-file-delivery/` tree is imported and available to the runtime. A UI that imports only the markdown header without the helper files is insufficient.
 
-## Operational docs
+## Packaged skill files
 
-- `docs/install-checklist.md`
-- `docs/paperclip-ui-install.md`
-- `docs/guardrails.md`
-- `docs/rollout.md`
-- `docs/env-setup.md`
-- `docs/company-agent-pack.md`
-- `docs/production-pack.md`
-- `docs/releases/v1.0.0.md`
+Primary installed assets live in the sibling directories Paperclip is most likely to preserve:
 
-## Company / agent pack
-
-Use these templates to make the skill operationally consistent after UI install:
-
-- `templates/company/AGENTS.md`
-- `templates/company/HEARTBEAT.md`
-- `templates/agents/DELIVERY-AGENT.md`
-- `templates/agents/REVIEWER.md`
-- `templates/company/openclaw.env.example`
+- `scripts/telegram_delivery.py`
+- `assets/TELEGRAM-DELIVERY-OPERATING-MODEL.md`
+- `references/docs/install-checklist.md`
+- `references/docs/paperclip-ui-install.md`
+- `references/docs/guardrails.md`
+- `references/docs/rollout.md`
+- `references/docs/env-setup.md`
+- `references/docs/company-agent-pack.md`
+- `references/docs/production-pack.md`
+- `references/templates/company/AGENTS.md`
+- `references/templates/company/HEARTBEAT.md`
+- `references/templates/agents/DELIVERY-AGENT.md`
+- `references/templates/agents/REVIEWER.md`
+- `references/examples/comment.txt`
+- `references/examples/attachments.json`
 
 ## References
 

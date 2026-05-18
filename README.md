@@ -1,63 +1,42 @@
-# telegram-file-delivery
+# paperclip-telegram-file-delivery
 
-Production-grade Telegram delivery helper for Paperclip/OpenClaw workflows.
+Production-ready Telegram delivery skill for Paperclip/OpenClaw.
 
-## Goals
+## Paperclip-compatible layout
 
-- easy UI import
-- only `.env` changes required
-- no extra package install step
-- explicit and safe Telegram delivery
-- Paperclip best-practice alignment for comment wakes and issue updates
+This repository is intentionally structured like the working `paperclip-self-improvement` repo:
 
-## Contents
-
-- `SKILL.md` — importable skill instructions
-- `bin/paperclip_telegram_send.py` — zero-install CLI entrypoint
-- `src/paperclip_telegram_delivery/` — Telegram helper library + workflow engine
-- `references/` — Paperclip workflow guidance
-- `docs/` — install, rollout, release, and guardrail docs
-- `examples/` — smoke-test inputs
-- `templates/` — reusable instruction fragments
-- `tests/` — safety and workflow coverage
-- `scripts/validate.sh` — production validation entrypoint
-
-## Zero-install usage
-
-```bash
-python skills/telegram-file-delivery/bin/paperclip_telegram_send.py message --text "Telegram delivery is configured."
-python skills/telegram-file-delivery/bin/paperclip_telegram_send.py document --path /absolute/path/to/file
-python skills/telegram-file-delivery/bin/paperclip_telegram_send.py workflow --comment-text '/telegram-send attachments' --attachments-dir /path/to/files --emit-comment
+```text
+skills/
+  telegram-file-delivery/
+    SKILL.md
+    scripts/
+    references/
+    assets/
 ```
 
-## Required env
+That layout is important because Paperclip UI skill import appears to preserve the skill markdown and its expected sibling skill directories more reliably than arbitrary repo-root helper trees.
 
-- `TELEGRAM_BOT_TOKEN`
-- `TELEGRAM_DEFAULT_CHAT_ID`
+## Install in Paperclip
 
-The helper auto-loads values from `.env`, `.env.telegram`, or `.env.paperclip` if present.
+Use the Paperclip UI with:
 
-## Optional env
+`https://github.com/fob92/paperclip-telegram-file-delivery`
 
-- `TELEGRAM_ALLOWED_CHAT_IDS`
-- `TELEGRAM_ALLOWED_EXTENSIONS`
-- `TELEGRAM_MAX_FILE_BYTES`
-- `TELEGRAM_TIMEOUT_SECONDS`
+Paperclip should discover the skill at:
 
-## UI install contract
+`skills/telegram-file-delivery/SKILL.md`
 
-For this to be production-ready through the UI, the skill import must preserve the full repository subtree for this skill, not only the top-level `SKILL.md`. This package is self-contained under `skills/telegram-file-delivery/` and requires no additional shell install step.
+and include sibling files from that same skill directory.
 
-See `import-contract.json` for the required file set.
+## Runtime path to use after install
 
-## Validation
+For the installed skill, prefer the self-contained helper:
 
 ```bash
-bash skills/telegram-file-delivery/scripts/validate.sh
+python scripts/telegram_delivery.py workflow --comment-file references/examples/comment.txt --attachments-manifest references/examples/attachments.json --emit-comment
 ```
 
-## Operational packs
+## Why this repo was reworked
 
-- company guidance: `templates/company/`
-- agent guidance: `templates/agents/`
-- env handoff: `docs/env-setup.md`
+A previous root-level layout resulted in UI installation that surfaced only the skill markdown. This repo now follows the stronger Paperclip pattern used by the other install-oriented repositories.

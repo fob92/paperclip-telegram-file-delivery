@@ -7,15 +7,14 @@ import unittest
 from pathlib import Path
 
 
-class CliTests(unittest.TestCase):
+class PackagedScriptTests(unittest.TestCase):
     def _env(self) -> dict[str, str]:
         env = os.environ.copy()
-        env["PYTHONPATH"] = str(Path("skills/telegram-file-delivery/src").resolve())
         env["TELEGRAM_BOT_TOKEN"] = "token"
         env["TELEGRAM_DEFAULT_CHAT_ID"] = "1"
         return env
 
-    def test_cli_workflow_not_triggered(self) -> None:
+    def test_packaged_script_workflow_not_triggered(self) -> None:
         repo_root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as tmp:
             comment = Path(tmp) / "comment.txt"
@@ -23,7 +22,7 @@ class CliTests(unittest.TestCase):
             proc = subprocess.run(
                 [
                     sys.executable,
-                    "skills/telegram-file-delivery/bin/paperclip_telegram_send.py",
+                    "skills/telegram-file-delivery/scripts/telegram_delivery.py",
                     "workflow",
                     "--comment-file",
                     str(comment),
