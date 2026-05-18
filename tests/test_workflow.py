@@ -41,7 +41,7 @@ class WorkflowTests(unittest.TestCase):
             workflow = DeliveryWorkflow(sender=FakeSafetySender())
             result = workflow.run(
                 DeliveryRequest(
-                    comment_text="/telegram-send attachments to -1001",
+                    comment_text="telegram-send attachments to -1001",
                     attachments=[AttachmentItem(path=md), AttachmentItem(path=js)],
                 )
             )
@@ -63,7 +63,7 @@ class WorkflowTests(unittest.TestCase):
             workflow = DeliveryWorkflow(sender=FakeSender())
             result = workflow.run(
                 DeliveryRequest(
-                    comment_text="/telegram-send attachments",
+                    comment_text="telegram-send attachments",
                     attachments=[AttachmentItem(path=md)],
                 )
             )

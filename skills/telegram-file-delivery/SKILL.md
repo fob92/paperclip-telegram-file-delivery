@@ -60,16 +60,17 @@ This package is designed to be **UI-importable** and **productive by default**:
 Preferred triggers:
 
 ```text
-/telegram-send attachments
-/telegram-send latest-package
-/telegram-send final-package
+telegram-send attachments
+telegram-send latest-files
+telegram-send latest-package
+telegram-send final-package
 ```
 
 Optional explicit destination override:
 
 ```text
-/telegram-send attachments to -1001234567890
-/telegram-send latest-package to -1001234567890
+telegram-send attachments to -1001234567890
+telegram-send latest-files to -1001234567890
 ```
 
 Keep V1 narrow. Do not act on vague requests like "send this somewhere".
@@ -82,7 +83,7 @@ On comment-driven wakes:
 2. Confirm it explicitly requests Telegram delivery.
 3. Prefer the comment wake payload / latest comment delta over replaying the full thread.
 4. Prefer issue attachments or explicit deliverable files from the current issue.
-5. For `latest-package` / `final-package`, resolve files from the latest prior comment that contains a `Delivered package` bullet list.
+5. For `latest-files` / `latest-package` / `final-package`, resolve files from the latest prior comment that contains a `Delivered package` bullet list.
 6. Filter files through the local safety policy.
 7. Send only allowed files.
 7. Post **one** summary comment back into the issue.
@@ -94,7 +95,7 @@ For the first production rollout, keep behavior constrained:
 
 - explicit command only
 - default destination chat unless an allowlisted override is requested
-- attachments-first source selection, with latest-package fallback from prior delivered-package comments
+- attachments-first source selection, with latest-files fallback from prior delivered-package comments
 - safe allowlisted file types only
 - one final summary comment
 
@@ -106,11 +107,11 @@ For Paperclip-installed use, prefer the self-contained helper in `scripts/`:
 python scripts/telegram_delivery.py message --text "Telegram delivery is configured."
 python scripts/telegram_delivery.py document --path /absolute/path/to/file
 python scripts/telegram_delivery.py workflow \
-  --comment-text '/telegram-send attachments' \
+  --comment-text 'telegram-send attachments' \
   --attachments-manifest references/examples/attachments.json \
   --emit-comment
 python scripts/telegram_delivery.py workflow \
-  --comment-text '/telegram-send latest-package' \
+  --comment-text 'telegram-send latest-files' \
   --package-comment-file references/examples/package-comment.txt \
   --emit-comment
 ```

@@ -11,7 +11,7 @@ from urllib import error, parse, request
 
 DEFAULT_ALLOWED_EXTENSIONS = ".md,.txt,.pdf,.docx,.pptx,.xlsx,.png,.jpg,.jpeg"
 TRIGGER_RE = re.compile(
-    r"(?:^|\n)\s*/telegram-send\s+(?P<mode>attachments|latest-package|final-package)(?:\s+to\s+(?P<chat>-?\d+))?\s*$",
+    r"(?:^|\n)\s*(?:telegram-send|send\s+to\s+telegram)\s+(?P<mode>attachments|latest-files|latest-package|final-package)(?:\s+to\s+(?P<chat>-?\d+))?\s*$",
     re.IGNORECASE | re.MULTILINE,
 )
 DELIVERED_PACKAGE_RE = re.compile(
@@ -209,11 +209,11 @@ def run_workflow(args) -> tuple[int, dict]:
     result = {"ok": True, "trigger_matched": matched, "target_chat_id": target_chat_id, "mode": mode, "sent": [], "skipped": [], "failed": [], "notes": []}
     if not matched:
         result["ok"] = False
-        result["notes"].append("No explicit /telegram-send command found.")
+        result["notes"].append("No explicit telegram delivery command found.")
         return 1, result
 
     attachments = attachments_from_args(args)
-    if mode in {"latest-package", "final-package"} and not attachments:
+    if mode in {"latest-files", "latest-package", "final-package"} and not attachments:
         attachments = package_attachments_from_comment_text(package_comment_text)
         if attachments:
             result["notes"].append("Resolved files from the latest delivered package comment.")

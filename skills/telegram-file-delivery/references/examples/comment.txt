@@ -1,1 +1,1 @@
-/telegram-send attachments
+telegram-send attachments

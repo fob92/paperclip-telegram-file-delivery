@@ -52,7 +52,7 @@ class PackagedScriptTests(unittest.TestCase):
             ]:
                 (cto / name).write_text("x")
             trigger = root / "trigger.txt"
-            trigger.write_text("/telegram-send latest-package")
+            trigger.write_text("telegram-send latest-files")
             package = root / "package.txt"
             package.write_text(PACKAGE_COMMENT)
             proc = subprocess.run(
@@ -75,7 +75,7 @@ class PackagedScriptTests(unittest.TestCase):
         self.assertEqual(proc.returncode, 1)
         payload = json.loads(proc.stdout)
         self.assertTrue(payload["trigger_matched"])
-        self.assertEqual(payload["mode"], "latest-package")
+        self.assertEqual(payload["mode"], "latest-files")
         self.assertIn("Resolved files from the latest delivered package comment.", payload["notes"])
         self.assertEqual(len(payload["failed"]), 3)
 

@@ -25,7 +25,7 @@ After Paperclip UI installation, prefer the self-contained helper:
 
 ```bash
 python scripts/telegram_delivery.py workflow --comment-file references/examples/comment.txt --attachments-manifest references/examples/attachments.json --emit-comment
-python scripts/telegram_delivery.py workflow --comment-text '/telegram-send latest-package' --package-comment-file references/examples/package-comment.txt --emit-comment
+python scripts/telegram_delivery.py workflow --comment-text 'telegram-send latest-files' --package-comment-file references/examples/package-comment.txt --emit-comment
 ```
 
 ## What is inside

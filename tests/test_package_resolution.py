@@ -21,11 +21,11 @@ class PackageResolutionTests(unittest.TestCase):
             "cto/PRO-65-final-package-manifest.md",
         ])
 
-    def test_parse_trigger_latest_package(self) -> None:
-        matched, chat, mode = telegram_delivery.parse_trigger("/telegram-send latest-package")
+    def test_parse_trigger_latest_files(self) -> None:
+        matched, chat, mode = telegram_delivery.parse_trigger("telegram-send latest-files")
         self.assertTrue(matched)
         self.assertIsNone(chat)
-        self.assertEqual(mode, "latest-package")
+        self.assertEqual(mode, "latest-files")
 
 
 if __name__ == "__main__":
