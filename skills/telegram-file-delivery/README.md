@@ -28,6 +28,24 @@ python scripts/telegram_delivery.py workflow --comment-file references/examples/
 python scripts/telegram_delivery.py workflow --comment-text 'telegram-send latest-files' --package-comment-file references/examples/package-comment.txt --emit-comment
 ```
 
+## Companion workflow: TweetClaw reports
+
+OpenClaw agents can collect X/Twitter context with
+[TweetClaw](https://github.com/Xquik-dev/tweetclaw), then use this skill to
+deliver only reviewed files:
+
+```bash
+openclaw plugins install @xquik/tweetclaw
+```
+
+Use TweetClaw to search tweets, search tweet replies, export followers, look up
+users, monitor tweets, route webhooks, or prepare giveaway draw results. Save the
+reviewed summary, CSV, PDF, image, or report as an issue attachment, then run
+Telegram delivery only after an explicit `telegram-send attachments` or
+`telegram-send latest-files` comment. Keep post tweets, post tweet replies,
+direct messages, media upload, and media download behind operator review before
+any Telegram delivery.
+
 ## What is inside
 
 - `SKILL.md` — importable skill instructions
